@@ -24,12 +24,10 @@ const ChatInterface: React.FC = () => {
   const { state, sendMessage, selectOption, dispatch } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [retryingMessage, setRetryingMessage] = useState<string | null>(null);
   
   // Set current user in chat state
   useEffect(() => {
     if (profile) {
-      // Use profile instead of user to match UserProfile type
       dispatch({ type: 'SET_USER', payload: profile });
     }
   }, [profile, dispatch]);
@@ -107,86 +105,18 @@ const ChatInterface: React.FC = () => {
     }
   }, [state.conversationEnded, state.user, state.subjects, state.interests, state.workingStyles, state.goals, state.recommendedCareers]);
   
-  const handleRetry = async (messageId: string) => {
-    const messageToRetry = state.messages.find(m => m.id === messageId);
-    if (!messageToRetry || messageToRetry.role !== "user") return;
-
-    setRetryingMessage(messageId);
-    try {
-      // Remove the failed message and its response
-      const newMessages = state.messages.filter(m => m.id !== messageId && m.id !== `${messageId}-response`);
-      dispatch({ type: 'SET_MESSAGES', payload: newMessages });
-      
-      // Resend the message
-      await handleSendMessage(messageToRetry.content);
-    } catch (error) {
-      console.error("Error retrying message:", error);
-      toast({
-        title: "Error",
-        description: "Failed to retry message. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setRetryingMessage(null);
-    }
-  };
-  
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: content.trim(),
-    };
-
-    dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
-    setInput('');
-
+    
     try {
-      await trackEvent('user_message', { content: content }, state.user?.id);
-      
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...state.messages, userMessage].map(({ role, content }) => ({
-            role,
-            content,
-          })),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      const assistantMessage: Message = {
-        id: `${userMessage.id}-response`,
-        role: "assistant",
-        content: data.message,
-      };
-
-      dispatch({ type: 'ADD_MESSAGE', payload: assistantMessage });
+      await trackEvent('user_message', { content }, state.user?.id);
+      sendMessage(content);
+      setInput('');
     } catch (error) {
-      console.error("Error sending message:", error);
-      
-      const errorMessage: Message = {
-        id: `${userMessage.id}-error`,
-        role: "assistant",
-        content: "Sorry, I encountered an error while processing your message. Please try again.",
-        error: true,
-      };
-
-      dispatch({ type: 'ADD_MESSAGE', payload: errorMessage });
-      
+      console.error("Error tracking message:", error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: "Failed to track message. Please try again.",
         variant: "destructive",
       });
     }
@@ -215,42 +145,7 @@ const ChatInterface: React.FC = () => {
             } else if (message.type === 'summary') {
               return <SummaryCard key={message.id} message={message} onRestart={handleRestart} />;
             } else {
-              return (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-lg p-4 ${
-                      message.role === "user"
-                        ? "bg-chatbot-blue text-white"
-                        : message.error
-                        ? "bg-red-50 border border-red-200"
-                        : "bg-white border border-gray-200"
-                    }`}
-                  >
-                    {message.error && (
-                      <div className="flex items-center gap-2 mb-2 text-red-600">
-                        <AlertCircle className="h-4 w-4" />
-                        <span className="text-sm font-medium">Error</span>
-                      </div>
-                    )}
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                    {message.error && message.role === "assistant" && (
-                      <button
-                        onClick={() => handleRetry(message.id.split("-")[0])}
-                        disabled={retryingMessage === message.id.split("-")[0]}
-                        className="mt-2 flex items-center gap-1 text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
-                      >
-                        <RefreshCw className={`h-3 w-3 ${retryingMessage === message.id.split("-")[0] ? "animate-spin" : ""}`} />
-                        Retry
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
+              return <ChatMessage key={message.id} message={message} selectOption={selectOption} />;
             }
           })}
           
