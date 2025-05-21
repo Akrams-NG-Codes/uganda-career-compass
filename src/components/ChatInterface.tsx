@@ -7,6 +7,8 @@ import SummaryCard from './SummaryCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
+import { trackEvent, saveUserSession, saveSessionRecommendations } from '@/services/supabaseService';
+import { toast } from "@/hooks/use-toast";
 
 const ChatInterface: React.FC = () => {
   const { state, sendMessage, selectOption, dispatch } = useChat();
@@ -18,16 +20,67 @@ const ChatInterface: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.messages]);
   
-  const handleSendMessage = (e: React.FormEvent) => {
+  // Track session progress
+  useEffect(() => {
+    if (state.conversationEnded && state.user?.id) {
+      const saveSession = async () => {
+        try {
+          // Save user session
+          const sessionData = {
+            user_id: state.user.id,
+            subjects: state.preferences?.subjects || [],
+            interests: state.preferences?.interests || [],
+            working_styles: state.preferences?.workingStyles || [],
+            goals: state.preferences?.goals || ""
+          };
+          
+          const { data: session, error: sessionError } = await saveUserSession(sessionData);
+          
+          if (sessionError) {
+            console.error("Error saving session:", sessionError);
+            return;
+          }
+          
+          if (session && state.recommendedCareers) {
+            // Save career recommendations
+            const recommendations = state.recommendedCareers.map(career => ({
+              session_id: session.id,
+              career_id: career.id,
+              match_score: career.matchScore || 0
+            }));
+            
+            await saveSessionRecommendations(recommendations);
+          }
+        } catch (error) {
+          console.error("Error saving session data:", error);
+        }
+      };
+      
+      saveSession();
+    }
+  }, [state.conversationEnded, state.user?.id, state.preferences, state.recommendedCareers]);
+  
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
     
     sendMessage(input);
     setInput('');
+    
+    // Track user message for analytics
+    try {
+      await trackEvent('user_message', { content: input }, state.user?.id);
+    } catch (error) {
+      console.error("Error tracking event:", error);
+    }
   };
   
   const handleRestart = () => {
     dispatch({ type: 'RESTART_CONVERSATION' });
+    toast({
+      title: "Session Restarted",
+      description: "Starting a new career guidance session.",
+    });
   };
   
   return (

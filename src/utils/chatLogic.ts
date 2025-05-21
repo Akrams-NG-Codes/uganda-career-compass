@@ -1,6 +1,7 @@
-
 import { useState } from 'react';
 import { matchCareers, getMatchReasons, type Career } from './careerData';
+import { supabase } from "@/integrations/supabase/client";
+import { getCareers } from "@/services/supabaseService";
 
 export type MessageType = 'bot' | 'user' | 'options' | 'careers' | 'summary';
 
