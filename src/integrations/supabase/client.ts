@@ -5,6 +5,16 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://tykcecjhmfdopjooihwp.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5a2NlY2pobWZkb3Bqb29paHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2Njk1MzUsImV4cCI6MjA2MzI0NTUzNX0.p_jMjHJuV3jjWxQQE680h1ZXq66Vh8nSrxHfBIxjqkc";
 
+// Get the current URL for redirects
+const getRedirectUrl = () => {
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    return `${protocol}//${host}`;
+  }
+  return 'https://uganda-career-guide.vercel.app';
+};
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -14,6 +24,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    redirectTo: 'https://uganda-career-guide.vercel.app'
+    redirectTo: getRedirectUrl()
   }
 });
