@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getUserProfile } from '@/services/supabaseService';
 import { UserProfile } from '@/types/careerGuide';
 import { User } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check active session
@@ -32,9 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           const { data } = await getUserProfile(session.user.id);
           setProfile(data);
-          
-          // In a real app, we would check roles here
-          // For now we always set isAdmin to true for signed in users
           setIsAdmin(true);
         }
       } catch (error) {
@@ -100,10 +99,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-    setIsAdmin(false);
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setIsAdmin(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
   };
 
   const value = {

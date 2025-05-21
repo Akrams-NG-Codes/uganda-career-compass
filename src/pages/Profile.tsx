@@ -5,13 +5,14 @@ import { UserProfile, UserSession, Career } from "@/types/careerGuide";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, LogOut } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfile>>({
