@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getUserProfile } from '@/services/supabaseService';
@@ -76,7 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: userData
+          data: userData,
+          emailRedirectTo: 'https://uganda-career-guide.vercel.app/login'
         }
       });
       

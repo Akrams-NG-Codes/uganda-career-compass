@@ -14,6 +14,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    redirectTo: 'https://uganda-career-guide.vercel.app'
+    redirectTo: 'https://uganda-career-guide.vercel.app/login'
   }
 });
