@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
@@ -115,6 +115,23 @@ const Profile = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Logout Failed",
+        description: "There was an error logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const LoadingSkeleton = () => (
     <div className="space-y-4">
       <Skeleton className="h-4 w-3/4" />
@@ -152,11 +169,19 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <Link to="/" className="flex items-center text-chatbot-blue hover:underline">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Home
           </Link>
+          <Button
+            variant="outline"
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
         
         <div className="flex flex-col lg:flex-row gap-6">
@@ -243,9 +268,8 @@ const Profile = () => {
                     <div className="text-sm text-gray-500">Grade/Class</div>
                     <div>{profile?.grade || "Not set"}</div>
                   </div>
-                  <div className="pt-2 flex flex-col gap-2">
+                  <div className="pt-2">
                     <Button onClick={() => setEditMode(true)}>Edit Profile</Button>
-                    <Button variant="outline" onClick={signOut}>Sign Out</Button>
                   </div>
                 </div>
               )}
@@ -292,16 +316,44 @@ const Profile = () => {
                         </div>
                         
                         <div className="mb-3">
+                          <div className="text-xs text-gray-500">Working Styles</div>
+                          <div className="text-sm">{session.working_styles.join(", ")}</div>
+                        </div>
+
+                        <div className="mb-3">
+                          <div className="text-xs text-gray-500">Goals</div>
+                          <div className="text-sm">{session.goals || "Not specified"}</div>
+                        </div>
+                        
+                        <div className="mb-3">
                           <div className="text-xs text-gray-500">Top Recommendations</div>
                           {session.recommendations && session.recommendations.length > 0 ? (
                             <ul className="list-disc list-inside text-sm">
                               {session.recommendations.slice(0, 3).map((rec: any) => (
-                                <li key={rec.id}>{rec.careers?.name}</li>
+                                <li key={rec.id}>
+                                  {rec.careers?.name}
+                                  {rec.match_score && (
+                                    <span className="text-xs text-gray-500 ml-2">
+                                      (Match: {Math.round(rec.match_score * 100)}%)
+                                    </span>
+                                  )}
+                                </li>
                               ))}
                             </ul>
                           ) : (
                             <span className="text-sm">No recommendations recorded</span>
                           )}
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t">
+                          <div className="text-xs text-gray-500 mb-2">Conversation Summary</div>
+                          <div className="text-sm space-y-2">
+                            <p><strong>Initial Assessment:</strong> Based on your interests in {session.interests.join(", ")} and strengths in {session.subjects.join(", ")}, we explored career paths that align with your working style of {session.working_styles.join(", ")}.</p>
+                            {session.goals && (
+                              <p><strong>Your Goals:</strong> {session.goals}</p>
+                            )}
+                            <p><strong>Recommendation Basis:</strong> The suggested careers were selected based on your academic strengths, personal interests, and preferred working environment.</p>
+                          </div>
                         </div>
                       </div>
                     </Card>
