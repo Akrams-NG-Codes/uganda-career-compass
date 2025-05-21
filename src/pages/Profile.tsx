@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
   const { user, profile, signOut } = useAuth();
@@ -114,6 +115,40 @@ const Profile = () => {
     }
   };
 
+  const LoadingSkeleton = () => (
+    <div className="space-y-4">
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+      <Skeleton className="h-4 w-2/3" />
+      <Skeleton className="h-4 w-1/2" />
+      <Skeleton className="h-4 w-3/4" />
+    </div>
+  );
+
+  const SessionSkeleton = () => (
+    <Card className="overflow-hidden">
+      <div className="bg-gray-50 p-3 border-b">
+        <Skeleton className="h-4 w-1/3" />
+      </div>
+      <div className="p-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+          <div>
+            <Skeleton className="h-3 w-1/4 mb-2" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+          <div>
+            <Skeleton className="h-3 w-1/4 mb-2" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+        <div>
+          <Skeleton className="h-3 w-1/4 mb-2" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-orange-50 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
@@ -132,7 +167,9 @@ const Profile = () => {
               <CardDescription>Manage your account information</CardDescription>
             </CardHeader>
             <CardContent>
-              {editMode ? (
+              {loading ? (
+                <LoadingSkeleton />
+              ) : editMode ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">First Name</label>
@@ -223,7 +260,11 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               {loadingSessions ? (
-                <div className="text-center py-4">Loading sessions...</div>
+                <div className="space-y-4">
+                  <SessionSkeleton />
+                  <SessionSkeleton />
+                  <SessionSkeleton />
+                </div>
               ) : sessions.length === 0 ? (
                 <div className="text-center py-4">
                   <p className="text-gray-500">No sessions found</p>

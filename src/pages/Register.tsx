@@ -15,8 +15,35 @@ const Register = () => {
   const navigate = useNavigate();
   const { signUp } = useAuth();
 
+  const validatePassword = (password: string) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    const errors = [];
+    if (password.length < minLength) errors.push(`At least ${minLength} characters`);
+    if (!hasUpperCase) errors.push("One uppercase letter");
+    if (!hasLowerCase) errors.push("One lowercase letter");
+    if (!hasNumbers) errors.push("One number");
+    if (!hasSpecialChar) errors.push("One special character");
+
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      toast({
+        title: "Invalid Password",
+        description: `Password must contain: ${passwordErrors.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (password !== confirmPassword) {
       toast({
@@ -91,7 +118,11 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
               />
+              <p className="text-xs text-gray-500">
+                Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.
+              </p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="confirmPassword">
