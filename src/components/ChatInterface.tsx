@@ -10,19 +10,21 @@ import { Send } from 'lucide-react';
 import { trackEvent, saveUserSession, saveSessionRecommendations } from '@/services/supabaseService';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { UserProfile } from '@/types/careerGuide';
 
 const ChatInterface: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { state, sendMessage, selectOption, dispatch } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Set current user in chat state
   useEffect(() => {
-    if (user) {
-      dispatch({ type: 'SET_USER', payload: user });
+    if (profile) {
+      // Use profile instead of user to match UserProfile type
+      dispatch({ type: 'SET_USER', payload: profile });
     }
-  }, [user, dispatch]);
+  }, [profile, dispatch]);
   
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -50,11 +52,11 @@ const ChatInterface: React.FC = () => {
             return;
           }
           
-          if (session && state.recommendedCareers) {
+          if (session && state.recommendedCareers && state.recommendedCareers.length > 0) {
             // Save career recommendations
             const recommendations = state.recommendedCareers.map(career => ({
               session_id: session.id,
-              career_id: career.id || "",
+              career_id: career.id,
               match_score: career.matchScore || 0
             }));
             
