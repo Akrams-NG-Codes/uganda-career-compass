@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +19,8 @@ const AdminDashboard = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    subject_combination: "",
-    education_pathway: "",
+    subjectCombination: "", // Changed from subject_combination
+    educationPathway: "", // Changed from education_pathway
     average_salary: "",
     career_category_id: "",
   });
@@ -62,8 +63,8 @@ const AdminDashboard = () => {
         id: "1",
         name: "Software Engineer",
         description: "Develops software applications using various programming languages and tools.",
-        subject_combination: "Mathematics, Physics, Computer Studies",
-        education_pathway: "Computer Science or Software Engineering degree",
+        subjectCombination: "Mathematics, Physics, Computer Studies", // Changed from subject_combination
+        educationPathway: "Computer Science or Software Engineering degree",
         average_salary: "$70,000 - $150,000",
         career_category_id: "tech",
         created_at: new Date().toISOString(),
@@ -75,8 +76,8 @@ const AdminDashboard = () => {
         id: "2",
         name: "Doctor",
         description: "Diagnoses and treats patients with various health conditions.",
-        subject_combination: "Biology, Chemistry, Physics",
-        education_pathway: "Medical School and Residency",
+        subjectCombination: "Biology, Chemistry, Physics", // Changed from subject_combination
+        educationPathway: "Medical School and Residency",
         average_salary: "$200,000 - $500,000",
         career_category_id: "healthcare",
         created_at: new Date().toISOString(),
@@ -99,8 +100,8 @@ const AdminDashboard = () => {
       const { error } = await createCareer({
         name: formData.name,
         description: formData.description,
-        subject_combination: formData.subject_combination,
-        education_pathway: formData.education_pathway,
+        subjectCombination: formData.subjectCombination, // Changed from subject_combination
+        educationPathway: formData.educationPathway, // Changed from education_pathway
         average_salary: formData.average_salary,
         career_category_id: formData.career_category_id || null,
       });
@@ -116,8 +117,8 @@ const AdminDashboard = () => {
       setFormData({
         name: "",
         description: "",
-        subject_combination: "",
-        education_pathway: "",
+        subjectCombination: "", // Changed from subject_combination
+        educationPathway: "", // Changed from education_pathway
         average_salary: "",
         career_category_id: "",
       });
@@ -304,8 +305,8 @@ const AdminDashboard = () => {
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Subject Combination</label>
                       <Input
-                        name="subject_combination"
-                        value={formData.subject_combination}
+                        name="subjectCombination"
+                        value={formData.subjectCombination}
                         onChange={handleChange}
                         placeholder="e.g., Physics, Chemistry, Mathematics"
                         required
@@ -315,8 +316,8 @@ const AdminDashboard = () => {
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Education Pathway</label>
                       <Textarea
-                        name="education_pathway"
-                        value={formData.education_pathway}
+                        name="educationPathway"
+                        value={formData.educationPathway}
                         onChange={handleChange}
                         rows={2}
                         required

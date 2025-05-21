@@ -68,8 +68,8 @@ const ChatInterface: React.FC = () => {
               // Save career recommendations
               const recommendations = state.recommendedCareers.map(career => ({
                 session_id: session.id,
-                career_id: career.id || "",
-                match_score: career.matchScore || 0
+                career_id: career.id || "", // Ensure id exists and handle cases where it might be undefined
+                match_score: career.matchScore || 0 // Ensure matchScore exists and handle cases where it might be undefined
               }));
               
               const { error: recommendationsError } = await saveSessionRecommendations(recommendations);

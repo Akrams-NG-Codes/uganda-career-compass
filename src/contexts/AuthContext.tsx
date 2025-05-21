@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getUserProfile } from '@/services/supabaseService';
@@ -12,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
+  isLoading: boolean; // Added isLoading property
   isAdmin: boolean;
 }
 
@@ -23,6 +25,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
+  // Set isLoading as an alias to loading for consistency across components
+  const isLoading = loading;
 
   useEffect(() => {
     // Check active session
@@ -118,6 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signOut,
     loading,
+    isLoading, // Expose isLoading property
     isAdmin,
   };
 

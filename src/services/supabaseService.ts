@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Career, UserProfile, CareerCategory, UserSession, SessionRecommendation } from '@/types/careerGuide';
 
@@ -52,7 +51,8 @@ export const getCareers = async (): Promise<Career[]> => {
       created_at: career.created_at,
       updated_at: career.updated_at,
       matchScore: career.match_score || 85,
-      universities: ["Makerere University", "Kampala University"]
+      universities: ["Makerere University", "Kampala University"],
+      career_categories: career.categories,
     }));
   } catch (error) {
     console.error('Error fetching careers:', error);
@@ -75,6 +75,12 @@ const getMockCareers = (): Career[] => {
       updated_at: new Date().toISOString(),
       matchScore: 85,
       universities: ["Makerere University", "Kampala University"],
+      career_categories: {
+        id: "sample-category",
+        name: "Technology",
+        description: "Technology careers",
+        created_at: new Date().toISOString()
+      }
     },
     {
       id: 'career-2',
@@ -88,6 +94,12 @@ const getMockCareers = (): Career[] => {
       updated_at: new Date().toISOString(),
       matchScore: 80,
       universities: ["Makerere University", "Kampala University"],
+      career_categories: {
+        id: "sample-category-2",
+        name: "Healthcare",
+        description: "Healthcare careers",
+        created_at: new Date().toISOString()
+      }
     }
   ];
 };

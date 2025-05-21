@@ -25,6 +25,12 @@ export interface Career {
   updated_at: string;
   matchScore?: number; // Used for matching in the chat interface
   universities?: string[]; // Used for university recommendations
+  career_categories?: { // Added to match database join structure
+    id: string;
+    name: string;
+    description?: string | null;
+    created_at: string;
+  };
 }
 
 export interface CareerCategory {
