@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../utils/chatLogic';
 import ChatMessage from './ChatMessage';
@@ -49,21 +48,49 @@ const ChatInterface: React.FC = () => {
           
           if (sessionError) {
             console.error("Error saving session:", sessionError);
+            toast({
+              title: "Session Not Saved",
+              description: "Failed to save your career guidance session. Please try again later.",
+              variant: "destructive",
+            });
             return;
           }
           
           if (session && state.recommendedCareers && state.recommendedCareers.length > 0) {
-            // Save career recommendations - use optional chaining for id and matchScore
-            const recommendations = state.recommendedCareers.map(career => ({
-              session_id: session.id,
-              career_id: career.id || "", // Access id directly
-              match_score: career.matchScore || 0 // Access matchScore directly
-            }));
-            
-            await saveSessionRecommendations(recommendations);
+            try {
+              // Save career recommendations
+              const recommendations = state.recommendedCareers.map(career => ({
+                session_id: session.id,
+                career_id: career.id || "",
+                match_score: career.matchScore || 0
+              }));
+              
+              const { error: recommendationsError } = await saveSessionRecommendations(recommendations);
+              
+              if (recommendationsError) {
+                console.error("Error saving recommendations:", recommendationsError);
+                toast({
+                  title: "Recommendations Not Saved",
+                  description: "Failed to save your career recommendations. Please try again later.",
+                  variant: "destructive",
+                });
+              }
+            } catch (error) {
+              console.error("Error saving recommendations:", error);
+              toast({
+                title: "Recommendations Not Saved",
+                description: "An unexpected error occurred while saving your recommendations.",
+                variant: "destructive",
+              });
+            }
           }
         } catch (error) {
           console.error("Error saving session data:", error);
+          toast({
+            title: "Session Not Saved",
+            description: "An unexpected error occurred while saving your session.",
+            variant: "destructive",
+          });
         }
       };
       

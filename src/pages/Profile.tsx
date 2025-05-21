@@ -38,16 +38,33 @@ const Profile = () => {
       if (user) {
         setLoadingSessions(true);
         try {
-          const { data } = await getUserSessions(user.id);
+          const { data, error } = await getUserSessions(user.id);
+          
+          if (error) {
+            toast({
+              title: "Error Loading Sessions",
+              description: "Failed to load your career guidance sessions. Please try again later.",
+              variant: "destructive",
+            });
+            return;
+          }
           
           if (data) {
             const sessionsWithRecommendations = await Promise.all(
               data.map(async (session) => {
-                const { data: recommendations } = await getSessionRecommendations(session.id);
-                return {
-                  ...session,
-                  recommendations: recommendations || [],
-                };
+                try {
+                  const { data: recommendations } = await getSessionRecommendations(session.id);
+                  return {
+                    ...session,
+                    recommendations: recommendations || [],
+                  };
+                } catch (error) {
+                  console.error("Error fetching recommendations:", error);
+                  return {
+                    ...session,
+                    recommendations: [],
+                  };
+                }
               })
             );
             
@@ -55,6 +72,11 @@ const Profile = () => {
           }
         } catch (error) {
           console.error("Error fetching sessions:", error);
+          toast({
+            title: "Error Loading Sessions",
+            description: "An unexpected error occurred while loading your sessions.",
+            variant: "destructive",
+          });
         } finally {
           setLoadingSessions(false);
         }

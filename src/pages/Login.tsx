@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,9 +20,21 @@ const Login = () => {
 
     try {
       const { error } = await signIn(email, password);
-      if (!error) {
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message || "Failed to sign in. Please check your credentials.",
+          variant: "destructive",
+        });
+      } else {
         navigate("/");
       }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -76,12 +88,12 @@ const Login = () => {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <div className="text-sm text-center">
+          <p className="text-sm text-gray-600">
             Don't have an account?{" "}
             <Link to="/register" className="text-chatbot-blue hover:underline">
-              Register
+              Register here
             </Link>
-          </div>
+          </p>
         </CardFooter>
       </Card>
     </div>
