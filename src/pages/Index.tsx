@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ChatInterface from '../components/ChatInterface';
-import { Graduation } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -9,7 +9,7 @@ const Index = () => {
       <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-2rem)]">
         <header className="text-center mb-6">
           <div className="flex items-center justify-center mb-2">
-            <Graduation className="h-8 w-8 text-chatbot-blue mr-2" />
+            <GraduationCap className="h-8 w-8 text-chatbot-blue mr-2" />
             <h1 className="text-2xl md:text-3xl font-bold text-chatbot-blue">Career Guide AI</h1>
           </div>
           <p className="text-gray-600">Helping Ugandan secondary school students discover their ideal career paths</p>
