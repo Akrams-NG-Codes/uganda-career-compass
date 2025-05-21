@@ -9,11 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Send } from 'lucide-react';
 import { trackEvent, saveUserSession, saveSessionRecommendations } from '@/services/supabaseService';
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ChatInterface: React.FC = () => {
+  const { user } = useAuth();
   const { state, sendMessage, selectOption, dispatch } = useChat();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Set current user in chat state
+  useEffect(() => {
+    if (user) {
+      dispatch({ type: 'SET_USER', payload: user });
+    }
+  }, [user, dispatch]);
   
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -28,10 +37,10 @@ const ChatInterface: React.FC = () => {
           // Save user session
           const sessionData = {
             user_id: state.user.id,
-            subjects: state.preferences?.subjects || [],
-            interests: state.preferences?.interests || [],
-            working_styles: state.preferences?.workingStyles || [],
-            goals: state.preferences?.goals || ""
+            subjects: state.subjects || [],
+            interests: state.interests || [],
+            working_styles: state.workingStyles || [],
+            goals: state.goals || ""
           };
           
           const { data: session, error: sessionError } = await saveUserSession(sessionData);
@@ -45,7 +54,7 @@ const ChatInterface: React.FC = () => {
             // Save career recommendations
             const recommendations = state.recommendedCareers.map(career => ({
               session_id: session.id,
-              career_id: career.id,
+              career_id: career.id || "",
               match_score: career.matchScore || 0
             }));
             
@@ -58,7 +67,7 @@ const ChatInterface: React.FC = () => {
       
       saveSession();
     }
-  }, [state.conversationEnded, state.user?.id, state.preferences, state.recommendedCareers]);
+  }, [state.conversationEnded, state.user, state.subjects, state.interests, state.workingStyles, state.goals, state.recommendedCareers]);
   
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

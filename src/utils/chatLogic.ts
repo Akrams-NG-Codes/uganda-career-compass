@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { matchCareers, getMatchReasons, type Career } from './careerData';
 import { supabase } from "@/integrations/supabase/client";
 import { getCareers } from "@/services/supabaseService";
+import { UserProfile } from "@/types/careerGuide";
 
 export type MessageType = 'bot' | 'user' | 'options' | 'careers' | 'summary';
 
@@ -27,6 +28,13 @@ export interface ChatState {
   recommendedCareers: Career[];
   isTyping: boolean;
   conversationEnded: boolean;
+  user: UserProfile | null;
+  preferences?: {
+    subjects: string[];
+    interests: string[];
+    workingStyles: string[];
+    goals: string;
+  };
 }
 
 export type ChatAction = 
@@ -43,6 +51,7 @@ export type ChatAction =
   | { type: 'ASK_FOLLOWUP'; payload: string }
   | { type: 'HANDLE_FOLLOWUP'; payload: string }
   | { type: 'SET_TYPING'; payload: boolean }
+  | { type: 'SET_USER'; payload: UserProfile | null }
   | { type: 'RESTART_CONVERSATION' };
 
 export const initialState: ChatState = {
@@ -59,7 +68,14 @@ export const initialState: ChatState = {
   goals: '',
   recommendedCareers: [],
   isTyping: false,
-  conversationEnded: false
+  conversationEnded: false,
+  user: null,
+  preferences: {
+    subjects: [],
+    interests: [],
+    workingStyles: [],
+    goals: ''
+  }
 };
 
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
@@ -194,6 +210,12 @@ export function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return {
         ...state,
         isTyping: action.payload
+      };
+    
+    case 'SET_USER':
+      return {
+        ...state,
+        user: action.payload
       };
     
     case 'RESTART_CONVERSATION':

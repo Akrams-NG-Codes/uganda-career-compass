@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { getCareerCategories, createCareer, createCareerCategory, deleteCareer } from "@/services/supabaseService";
+import { CareerCategory, Career } from "@/types/careerGuide";
 
 const AdminDashboard = () => {
   const [careers, setCareers] = useState<any[]>([]);
@@ -32,20 +34,26 @@ const AdminDashboard = () => {
     
     try {
       // Fetch categories
-      const { data: categoriesData } = await supabase
-        .from("career_categories")
-        .select("*")
-        .order("name");
+      const categoriesData = await getCareerCategories();
       
       if (categoriesData) {
         setCategories(categoriesData);
       }
       
       // Fetch careers with their categories
-      const { data: careersData } = await supabase
-        .from("careers")
-        .select("*, career_categories(name)")
-        .order("name");
+      const { data: careersData, error: careersError } = await supabase
+        .from('careers')
+        .select('*, career_categories(name)');
+      
+      if (careersError) {
+        console.error("Error fetching careers:", careersError);
+        toast({
+          title: "Error",
+          description: "Failed to load career data",
+          variant: "destructive",
+        });
+        return;
+      }
       
       if (careersData) {
         setCareers(careersData);
@@ -71,16 +79,14 @@ const AdminDashboard = () => {
     e.preventDefault();
     
     try {
-      const { error } = await supabase
-        .from("careers")
-        .insert({
-          name: formData.name,
-          description: formData.description,
-          subject_combination: formData.subject_combination,
-          education_pathway: formData.education_pathway,
-          average_salary: formData.average_salary,
-          career_category_id: formData.career_category_id || null,
-        });
+      const { error } = await createCareer({
+        name: formData.name,
+        description: formData.description,
+        subject_combination: formData.subject_combination,
+        education_pathway: formData.education_pathway,
+        average_salary: formData.average_salary,
+        career_category_id: formData.career_category_id || null,
+      });
       
       if (error) throw error;
       
@@ -113,15 +119,12 @@ const AdminDashboard = () => {
 
   const handleAddCategory = async () => {
     const categoryName = prompt("Enter category name:");
+    const categoryDescription = prompt("Enter category description (optional):");
+    
     if (!categoryName) return;
     
     try {
-      const { error } = await supabase
-        .from("career_categories")
-        .insert({
-          name: categoryName,
-          description: "",
-        });
+      const { error } = await createCareerCategory(categoryName, categoryDescription || "");
       
       if (error) throw error;
       
@@ -146,10 +149,7 @@ const AdminDashboard = () => {
     if (!confirm("Are you sure you want to delete this career?")) return;
     
     try {
-      const { error } = await supabase
-        .from("careers")
-        .delete()
-        .eq("id", id);
+      const { error } = await deleteCareer(id);
       
       if (error) throw error;
       

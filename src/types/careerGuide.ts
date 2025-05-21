@@ -23,6 +23,9 @@ export interface Career {
   career_category_id?: string | null;
   created_at: string;
   updated_at: string;
+  career_categories?: CareerCategory;
+  matchScore?: number; // Added for compatibility with the chat interface
+  universities?: string[]; // Added for compatibility with university recommendations
 }
 
 export interface CareerCategory {
