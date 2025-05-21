@@ -17,15 +17,14 @@ export interface Career {
   id: string;
   name: string;
   description: string;
-  subject_combination: string;
-  education_pathway: string;
+  subjectCombination: string; // Changed from subject_combination for frontend
+  educationPathway: string;   // Changed from education_pathway for frontend
   average_salary?: string | null;
   career_category_id?: string | null;
   created_at: string;
   updated_at: string;
-  career_categories?: CareerCategory;
-  matchScore?: number; // Added for compatibility with the chat interface
-  universities?: string[]; // Added for compatibility with university recommendations
+  matchScore?: number; // Used for matching in the chat interface
+  universities?: string[]; // Used for university recommendations
 }
 
 export interface CareerCategory {

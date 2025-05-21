@@ -9,7 +9,176 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      careers: {
+        Row: {
+          average_salary: string | null
+          career_category_id: string | null
+          created_at: string | null
+          description: string
+          education_pathway: string
+          id: string
+          match_score: number | null
+          name: string
+          subject_combination: string
+          updated_at: string | null
+        }
+        Insert: {
+          average_salary?: string | null
+          career_category_id?: string | null
+          created_at?: string | null
+          description: string
+          education_pathway: string
+          id?: string
+          match_score?: number | null
+          name: string
+          subject_combination: string
+          updated_at?: string | null
+        }
+        Update: {
+          average_salary?: string | null
+          career_category_id?: string | null
+          created_at?: string | null
+          description?: string
+          education_pathway?: string
+          id?: string
+          match_score?: number | null
+          name?: string
+          subject_combination?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "careers_career_category_id_fkey"
+            columns: ["career_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          grade: string | null
+          id: string
+          last_name: string | null
+          school: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          grade?: string | null
+          id: string
+          last_name?: string | null
+          school?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          grade?: string | null
+          id?: string
+          last_name?: string | null
+          school?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      session_recommendations: {
+        Row: {
+          career_id: string | null
+          created_at: string | null
+          id: string
+          match_score: number
+          session_id: string | null
+        }
+        Insert: {
+          career_id?: string | null
+          created_at?: string | null
+          id?: string
+          match_score: number
+          session_id?: string | null
+        }
+        Update: {
+          career_id?: string | null
+          created_at?: string | null
+          id?: string
+          match_score?: number
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recommendations_career_id_fkey"
+            columns: ["career_id"]
+            isOneToOne: false
+            referencedRelation: "careers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recommendations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "user_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          goals: string | null
+          id: string
+          interests: string[] | null
+          subjects: string[] | null
+          user_id: string | null
+          working_styles: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          goals?: string | null
+          id?: string
+          interests?: string[] | null
+          subjects?: string[] | null
+          user_id?: string | null
+          working_styles?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          goals?: string | null
+          id?: string
+          interests?: string[] | null
+          subjects?: string[] | null
+          user_id?: string | null
+          working_styles?: string[] | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -29,7 +29,7 @@ export const checkIsAdmin = async (userId: string): Promise<{ isAdmin: boolean }
 // Function to get careers from Supabase
 export const getCareers = async (): Promise<Career[]> => {
   try {
-    // Try to fetch from the actual careers table first
+    // Try to fetch from the careers table
     const { data, error } = await supabase
       .from('careers')
       .select('*, categories(*)');
@@ -45,20 +45,14 @@ export const getCareers = async (): Promise<Career[]> => {
       id: career.id,
       name: career.name,
       description: career.description,
-      subject_combination: career.subject_combination,
-      education_pathway: career.education_pathway,
+      subjectCombination: career.subject_combination,
+      educationPathway: career.education_pathway,
       average_salary: career.average_salary,
       career_category_id: career.career_category_id,
       created_at: career.created_at,
       updated_at: career.updated_at,
       matchScore: career.match_score || 85,
-      universities: ["Makerere University", "Kampala University"],
-      career_categories: career.categories ? {
-        id: career.categories.id,
-        name: career.categories.name,
-        description: career.categories.description || null,
-        created_at: career.categories.created_at
-      } : undefined
+      universities: ["Makerere University", "Kampala University"]
     }));
   } catch (error) {
     console.error('Error fetching careers:', error);
@@ -73,8 +67,8 @@ const getMockCareers = (): Career[] => {
       id: 'career-1',
       name: 'Software Engineer',
       description: 'Develops software applications using various programming languages and tools.',
-      subject_combination: "Mathematics, Physics, Chemistry",
-      education_pathway: "University Degree",
+      subjectCombination: "Mathematics, Physics, Chemistry",
+      educationPathway: "University Degree",
       average_salary: "$50,000",
       career_category_id: "sample-category",
       created_at: new Date().toISOString(),
@@ -86,8 +80,8 @@ const getMockCareers = (): Career[] => {
       id: 'career-2',
       name: 'Doctor',
       description: 'Medical professional who diagnoses and treats patients.',
-      subject_combination: "Biology, Chemistry, Physics",
-      education_pathway: "Medical School",
+      subjectCombination: "Biology, Chemistry, Physics",
+      educationPathway: "Medical School",
       average_salary: "$80,000",
       career_category_id: "sample-category-2",
       created_at: new Date().toISOString(),
@@ -101,7 +95,7 @@ const getMockCareers = (): Career[] => {
 // Function to get career categories
 export const getCareerCategories = async (): Promise<CareerCategory[]> => {
   try {
-    // Try to fetch from the actual categories table first
+    // Try to fetch from the categories table
     const { data, error } = await supabase
       .from('categories')
       .select('*');
@@ -113,10 +107,10 @@ export const getCareerCategories = async (): Promise<CareerCategory[]> => {
     
     // Transform to career categories
     return data.map((category) => ({
-      id: category.id || `category-${Math.random()}`,
-      name: category.name || `Category`,
-      description: category.description || `Description`,
-      created_at: category.created_at || new Date().toISOString(),
+      id: category.id,
+      name: category.name,
+      description: category.description || null,
+      created_at: category.created_at,
     }));
   } catch (error) {
     console.error('Error fetching career categories:', error);
@@ -218,7 +212,7 @@ export const updateUserProfile = async (userId: string, profileData: Partial<Use
 // Function to save user session data
 export const saveUserSession = async (sessionData: Omit<UserSession, 'id' | 'created_at'>): Promise<{ data: UserSession | null, error: any }> => {
   try {
-    // Try to save to the actual user_sessions table
+    // Try to save to the user_sessions table
     const { data, error } = await supabase
       .from('user_sessions')
       .insert({
@@ -267,7 +261,7 @@ export const saveUserSession = async (sessionData: Omit<UserSession, 'id' | 'cre
 // Function to save session recommendations
 export const saveSessionRecommendations = async (recommendations: Omit<SessionRecommendation, 'id' | 'created_at'>[]): Promise<{ error: any }> => {
   try {
-    // Try to save to the actual session_recommendations table
+    // Try to save to the session_recommendations table
     const { error } = await supabase
       .from('session_recommendations')
       .insert(recommendations.map(rec => ({
@@ -292,7 +286,7 @@ export const saveSessionRecommendations = async (recommendations: Omit<SessionRe
 // Function to get user sessions
 export const getUserSessions = async (userId: string): Promise<{ data: UserSession[], error: any }> => {
   try {
-    // Try to get from the actual user_sessions table
+    // Try to get from the user_sessions table
     const { data, error } = await supabase
       .from('user_sessions')
       .select('*')
@@ -345,7 +339,7 @@ export const getUserSessions = async (userId: string): Promise<{ data: UserSessi
 // Function to get session recommendations
 export const getSessionRecommendations = async (sessionId: string): Promise<{ data: any[], error: any }> => {
   try {
-    // Try to get from the actual session_recommendations table
+    // Try to get from the session_recommendations table
     const { data, error } = await supabase
       .from('session_recommendations')
       .select('*, careers(*)')
@@ -408,10 +402,11 @@ export const createCareer = async (careerData: Partial<Career>): Promise<{ data:
       .insert({
         name: careerData.name || 'Unknown career',
         description: careerData.description || '',
-        subject_combination: careerData.subject_combination || '',
-        education_pathway: careerData.education_pathway || '',
+        subject_combination: careerData.subjectCombination || '',
+        education_pathway: careerData.educationPathway || '',
         average_salary: careerData.average_salary || null,
         career_category_id: careerData.career_category_id || null,
+        match_score: careerData.matchScore || 0,
         updated_at: new Date().toISOString(),
       })
       .select()
@@ -424,13 +419,14 @@ export const createCareer = async (careerData: Partial<Career>): Promise<{ data:
         id: `career-${Date.now()}`,
         name: careerData.name || 'Unknown career',
         description: careerData.description || '',
-        subject_combination: careerData.subject_combination || '',
-        education_pathway: careerData.education_pathway || '',
+        subjectCombination: careerData.subjectCombination || '',
+        educationPathway: careerData.educationPathway || '',
         average_salary: careerData.average_salary || null,
         career_category_id: careerData.career_category_id || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        matchScore: 75,
+        matchScore: careerData.matchScore || 75,
+        universities: [],
       };
       
       return { data: mockCareer, error: null };
@@ -440,13 +436,14 @@ export const createCareer = async (careerData: Partial<Career>): Promise<{ data:
       id: data.id,
       name: data.name,
       description: data.description,
-      subject_combination: data.subject_combination,
-      education_pathway: data.education_pathway,
+      subjectCombination: data.subject_combination,
+      educationPathway: data.education_pathway,
       average_salary: data.average_salary,
       career_category_id: data.career_category_id,
       created_at: data.created_at,
       updated_at: data.updated_at,
-      matchScore: 75,
+      matchScore: data.match_score || 75,
+      universities: [],
     };
     
     return { data: career, error: null };

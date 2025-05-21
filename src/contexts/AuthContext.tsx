@@ -1,63 +1,67 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { Session, User } from '@supabase/supabase-js';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { getUserProfile } from '@/services/supabaseService';
 import { UserProfile } from '@/types/careerGuide';
-import { toast } from "@/hooks/use-toast";
+import { User } from '@supabase/supabase-js';
 
-type AuthContextType = {
-  session: Session | null;
+interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{
-    error: Error | null;
-  }>;
-  signUp: (email: string, password: string) => Promise<{
-    error: Error | null;
-  }>;
+  signUp: (email: string, password: string, userData?: Partial<UserProfile>) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-};
+  loading: boolean;
+  isAdmin: boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
-      setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const { data } = await getUserProfile(session.user.id);
-        setProfile(data as UserProfile);
-      }
-      
-      setIsLoading(false);
-    };
-
-    getSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    // Check active session
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
         
         if (session?.user) {
           const { data } = await getUserProfile(session.user.id);
-          setProfile(data as UserProfile);
+          setProfile(data);
+          
+          // In a real app, we would check roles here
+          // For now we always set isAdmin to true for signed in users
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkSession();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user || null);
+        
+        if (session?.user) {
+          const { data } = await getUserProfile(session.user.id);
+          setProfile(data);
+          setIsAdmin(true);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
+        
+        setLoading(false);
       }
     );
 
@@ -66,68 +70,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, userData?: Partial<UserProfile>) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in.",
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData
+        }
       });
-      return { error: null };
-    } catch (error) {
-      toast({
-        title: "Sign in failed",
-        description: (error as Error).message,
-        variant: "destructive",
-      });
-      return { error: error as Error };
+      
+      return { error };
+    } catch (error: any) {
+      return { error };
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      toast({
-        title: "Account created",
-        description: "Please check your email for the confirmation link.",
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      return { error: null };
-    } catch (error) {
-      toast({
-        title: "Sign up failed",
-        description: (error as Error).message,
-        variant: "destructive",
-      });
-      return { error: error as Error };
+      
+      return { error };
+    } catch (error: any) {
+      return { error };
     }
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    toast({
-      title: "Signed out",
-      description: "You have been successfully signed out.",
-    });
+    setUser(null);
+    setProfile(null);
+    setIsAdmin(false);
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user,
-        profile,
-        isLoading,
-        signIn,
-        signUp,
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  const value = {
+    user,
+    profile,
+    signUp,
+    signIn,
+    signOut,
+    loading,
+    isAdmin,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

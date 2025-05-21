@@ -56,8 +56,8 @@ const ChatInterface: React.FC = () => {
             // Save career recommendations - use optional chaining for id and matchScore
             const recommendations = state.recommendedCareers.map(career => ({
               session_id: session.id,
-              career_id: career.id || "", // Add fallback for id
-              match_score: career.matchScore || 0 // Add fallback for matchScore
+              career_id: career.id || "", // Access id directly
+              match_score: career.matchScore || 0 // Access matchScore directly
             }));
             
             await saveSessionRecommendations(recommendations);
